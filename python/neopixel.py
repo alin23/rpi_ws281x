@@ -17,9 +17,11 @@ class _LED_Data(object):
 	"""Wrapper class which makes a SWIG LED color data array look and feel like
 	a Python list of integers.
 	"""
-	def __init__(self, channel, size):
+	def __init__(self, ws2811, channum, channel, size):
 		self.size = size
+		self.channum = channum
 		self.channel = channel
+		self.ws2811 = ws2811
 
 	def __getitem__(self, pos):
 		"""Return the 24-bit RGB color value at the provided position or slice
@@ -41,12 +43,11 @@ class _LED_Data(object):
 		# LED data values to the provided values.
 		if isinstance(pos, slice):
 			index = 0
-			for n in xrange(*pos.indices(self.size)):
-				ws.ws2811_led_set(self.channel, n, value[index])
-				index += 1
+			pixels = pos.indices(self.size)
+			ws.ws2811_led_set_multi_colors(self.ws2811, self.channum, n, value[index])
 		# Else assume the passed in value is a number to the position.
 		else:
-			return ws.ws2811_led_set(self.channel, pos, value)
+			return ws.ws2811_led_set(self.ws2811, self.channum, pos, value, 0)
 
 
 class Adafruit_NeoPixel(object):
@@ -84,7 +85,7 @@ class Adafruit_NeoPixel(object):
 		ws.ws2811_t_dmanum_set(self._leds, dma)
 
 		# Grab the led data array.
-		self._led_data = _LED_Data(self._channel, num)
+		self._led_data = _LED_Data(self._leds, channel, self._channel, num)
 
 		# Substitute for __del__, traps an exit condition and cleans up properly
 		atexit.register(self._cleanup)
@@ -104,6 +105,7 @@ class Adafruit_NeoPixel(object):
 		if resp != ws.WS2811_SUCCESS:
 			message = ws.ws2811_get_return_t_str(resp)
 			raise RuntimeError('ws2811_init failed with code {0} ({1})'.format(resp, message))
+		ws.ws2811_set(self._leds, self._led_data.channum)
 
 	def show(self):
 		"""Update the display with the data from the LED buffer."""
