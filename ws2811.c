@@ -1154,15 +1154,19 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         {
             protocol_time = channel_protocol_time;
         }
-
+        uint8_t rled, gled, bled, wled;
         for (i = 0; i < channel->count; i++)                // Led
         {
+            rled = (channel->leds[i] >> channel->rshift);
+            gled = (channel->leds[i] >> channel->gshift);
+            bled = (channel->leds[i] >> channel->bshift);
+            wled = (channel->leds[i] >> channel->wshift);
             uint8_t color[] =
             {
-                channel->gamma[(((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8], // red
-                channel->gamma[(((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8], // green
-                channel->gamma[(((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8], // blue
-                channel->gamma[(((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8], // white
+                channel->gamma[(((rled & 0xff) * scale) >> 8) + ((rled && scale && (rled < 0xff)) ? 1 : 0)], // red
+                channel->gamma[(((gled & 0xff) * scale) >> 8) + ((gled && scale && (gled < 0xff)) ? 1 : 0)], // green
+                channel->gamma[(((bled & 0xff) * scale) >> 8) + ((bled && scale && (bled < 0xff)) ? 1 : 0)], // blue
+                channel->gamma[(((wled & 0xff) * scale) >> 8) + ((wled && scale && (wled < 0xff)) ? 1 : 0)], // white
             };
 
             for (j = 0; j < array_size; j++)               // Color
