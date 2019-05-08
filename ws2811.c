@@ -1023,7 +1023,11 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
 
     MAX_BRIGHTNESS = 0xff * channels * channel_count;
     MAX_POWER = CHANNEL_POWER * channels * channel_count;
-    MAX_POSSIBLE_SCALE = floor((POSSIBLE_POWER / MAX_POWER) * (double)255);
+    if (POSSIBLE_POWER < MAX_POWER) {
+        MAX_POSSIBLE_SCALE = floor((POSSIBLE_POWER / MAX_POWER) * (double)255);
+    } else {
+        MAX_POSSIBLE_SCALE = 255;
+    }
 
     printf("MAX_BRIGHTNESS: %f\n", MAX_BRIGHTNESS);
     printf("MAX_POWER: %fW\n", MAX_POWER);
