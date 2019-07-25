@@ -46,6 +46,7 @@ platforms = [
         {                       # Special environment setup
             'CPPPATH' : [
             ],
+            'CFLAGS' : ['-mcpu=cortex-a53', '-mfloat-abi=hard', '-mfpu=neon-fp-armv8', '-mneon-for-64bits', '-mtune=cortex-a53'],
             'LINKFLAGS' : [
                 "-lrt",
                 "-lm",
