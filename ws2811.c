@@ -86,8 +86,8 @@
 #define PCM	2
 #define SPI	3
 
-#define CHANNEL_POWER 0.1
-#define POSSIBLE_POWER 7.0
+#define CHANNEL_POWER 0.1  // 100mW
+#define POSSIBLE_POWER 8.0  // 8W
 
 double MAX_BRIGHTNESS = 0xff * LED_COLOURS * 300;
 double MAX_POWER = CHANNEL_POWER * LED_COLOURS * 300;

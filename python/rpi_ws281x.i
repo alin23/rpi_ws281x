@@ -23,8 +23,8 @@
 import_array();
 %}
 
-%apply (int* IN_ARRAY1, int DIM1) {(int* leds, int ledcount), (int* colors, int colorcount)};
-%apply (int* IN_ARRAY1, int DIM1) {(int* leds, int ledcount)};
+%apply (uint32_t* IN_ARRAY1, int DIM1) {(uint32_t* leds, int ledcount), (uint32_t* colors, int colorcount)};
+%apply (uint32_t* IN_ARRAY1, int DIM1) {(uint32_t* leds, int ledcount)};
 
 // Process ws2811.h header and export all included functions.
 %include "../ws2811.h"
@@ -93,16 +93,15 @@ import_array();
         return 0;
     }
 
-    int ws2811_led_set_multi_colors(int* leds, int ledcount, int* colors, int colorcount, int render)
+    int ws2811_led_set_multi_colors(uint32_t* leds, int ledcount, uint32_t* colors, int colorcount, int render)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
-        uint32_t* colors32 = (uint32_t*)colors;
-        int lednum = 0;
+        uint32_t lednum = 0;
         for (int i = 0; i < ledcount; ++i)
         {
             lednum = leds[i];
             if (lednum < channel->count) {
-                channel->leds[lednum] = colors32[i];
+                channel->leds[lednum] = colors[i];
             }
         }
 
@@ -114,10 +113,10 @@ import_array();
         return 0;
     }
 
-    int ws2811_led_set_multi_color(int* leds, int ledcount, uint32_t color, int render)
+    int ws2811_led_set_multi_color(uint32_t* leds, int ledcount, uint32_t color, int render)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
-        int lednum = 0;
+        uint32_t lednum = 0;
         for (int i = 0; i < ledcount; ++i)
         {
             lednum = leds[i];
