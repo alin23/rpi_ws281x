@@ -86,11 +86,12 @@
 #define PCM	2
 #define SPI	3
 
-#define CHANNEL_POWER 0.1  // 100mW
-#define POSSIBLE_POWER 8.0  // 8W
+#define CHANNEL_POWER 0.18  // 180mW
+#define POSSIBLE_POWER 40.0  // 40W
 
-double MAX_BRIGHTNESS = 0xff * LED_COLOURS * 300;
-double MAX_POWER = CHANNEL_POWER * LED_COLOURS * 300;
+#define LED_COUNT 300
+double MAX_BRIGHTNESS = 0xff * LED_COLOURS * LED_COUNT;
+double MAX_POWER = CHANNEL_POWER * LED_COLOURS * LED_COUNT;
 int MAX_POSSIBLE_SCALE = 255;
 
 // We use the mailbox interface to request memory from the VideoCore.
@@ -740,6 +741,28 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
     return -1;
 }
 
+static void compute_max_possible_power(ws2811_channel_t *channel) {
+    uint8_t channels = 3; // Assume 3 color LEDs, RGB
+
+    // If our shift mask includes the highest nibble, then we have 4 LEDs, RBGW.
+    if (channel->strip_type & SK6812_SHIFT_WMASK)
+    {
+        channels = 4;
+    }
+
+    MAX_BRIGHTNESS = 0xff * channels * channel->count;
+    MAX_POWER = CHANNEL_POWER * channels * channel->count;
+    if (POSSIBLE_POWER < MAX_POWER) {
+        MAX_POSSIBLE_SCALE = floor((POSSIBLE_POWER / MAX_POWER) * (double)255);
+    } else {
+        MAX_POSSIBLE_SCALE = 255;
+    }
+
+    printf("MAX_BRIGHTNESS: %f\n", MAX_BRIGHTNESS);
+    printf("MAX_POWER: %fW\n", MAX_POWER);
+    printf("MAX_POSSIBLE_SCALE: %d\n", MAX_POSSIBLE_SCALE);
+}
+
 static ws2811_return_t spi_init(ws2811_t *ws2811)
 {
     int spi_fd;
@@ -829,6 +852,8 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
         channel->gamma[x] = x;
       }
     }
+
+    compute_max_possible_power(channel);
 
     channel->wshift = (channel->strip_type >> 24) & 0xff;
     channel->rshift = (channel->strip_type >> 16) & 0xff;
@@ -967,17 +992,10 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
         ws2811->channel[chan].leds = NULL;
     }
 
-    int channel_count = 4;
-    int channel_strip_type = SK6812W_STRIP;
     // Allocate the LED buffers
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
         ws2811_channel_t *channel = &ws2811->channel[chan];
-        if (chan == 0)
-        {
-            channel_count = channel->count;
-            channel_strip_type = channel->strip_type;
-        }
 
         channel->leds = malloc(sizeof(ws2811_led_t) * channel->count);
         if (!channel->leds)
@@ -1003,6 +1021,10 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
           }
         }
 
+        if (chan == 0) {
+            compute_max_possible_power(channel);
+        }
+
         channel->wshift = (channel->strip_type >> 24) & 0xff;
         channel->rshift = (channel->strip_type >> 16) & 0xff;
         channel->gshift = (channel->strip_type >> 8)  & 0xff;
@@ -1013,25 +1035,6 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     device->dma_cb = (dma_cb_t *)device->mbox.virt_addr;
     device->pxl_raw = (uint8_t *)device->mbox.virt_addr + sizeof(dma_cb_t);
 
-    uint8_t channels = 3; // Assume 3 color LEDs, RGB
-
-    // If our shift mask includes the highest nibble, then we have 4 LEDs, RBGW.
-    if (channel_strip_type & SK6812_SHIFT_WMASK)
-    {
-        channels = 4;
-    }
-
-    MAX_BRIGHTNESS = 0xff * channels * channel_count;
-    MAX_POWER = CHANNEL_POWER * channels * channel_count;
-    if (POSSIBLE_POWER < MAX_POWER) {
-        MAX_POSSIBLE_SCALE = floor((POSSIBLE_POWER / MAX_POWER) * (double)255);
-    } else {
-        MAX_POSSIBLE_SCALE = 255;
-    }
-
-    printf("MAX_BRIGHTNESS: %f\n", MAX_BRIGHTNESS);
-    printf("MAX_POWER: %fW\n", MAX_POWER);
-    printf("MAX_POSSIBLE_SCALE: %d\n", MAX_POSSIBLE_SCALE);
 
     switch (device->driver_mode) {
     case PWM:
