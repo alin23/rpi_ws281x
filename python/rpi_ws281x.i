@@ -31,7 +31,6 @@ import_array();
 
 %inline %{
     ws2811_t* ledstrip;
-    int ledchannel;
 
     uint32_t ws2811_led_get(ws2811_channel_t *channel, int lednum)
     {
@@ -43,13 +42,12 @@ import_array();
         return channel->leds[lednum];
     }
 
-    int ws2811_set(ws2811_t *ws2811, int channum) {
+    int ws2811_set(ws2811_t *ws2811) {
         ledstrip = ws2811;
-        ledchannel = channum;
         return 0;
     }
 
-    int ws2811_led_set(int lednum, uint32_t color, int render)
+    int ws2811_led_set(int lednum, uint32_t color, int render, int ledchannel)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
         if (lednum >= channel->count)
@@ -58,6 +56,7 @@ import_array();
         }
 
         channel->leds[lednum] = color;
+        channel->dirty = 1;
 
         if (render == 1)
         {
@@ -67,7 +66,7 @@ import_array();
         return 0;
     }
 
-    int ws2811_led_set_all(uint32_t color, int render)
+    int ws2811_led_set_all(uint32_t color, int render, int ledchannel)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
         for (int i = 0; i < channel->count; ++i)
@@ -75,6 +74,8 @@ import_array();
             channel->leds[i] = color;
         }
 
+        channel->dirty = 1;
+
         if (render == 1)
         {
             ws2811_render(ledstrip);
@@ -82,10 +83,11 @@ import_array();
         return 0;
     }
 
-    int ws2811_led_set_brightness(uint8_t brightness, int render)
+    int ws2811_led_set_brightness(uint8_t brightness, int render, int ledchannel)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
         channel->brightness = brightness;
+        channel->dirty = 1;
         if (render == 1)
         {
             ws2811_render(ledstrip);
@@ -93,7 +95,7 @@ import_array();
         return 0;
     }
 
-    int ws2811_led_set_multi_colors(uint32_t* leds, int ledcount, uint32_t* colors, int colorcount, int render)
+    int ws2811_led_set_multi_colors(uint32_t* leds, int ledcount, uint32_t* colors, int colorcount, int render, int ledchannel)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
         uint32_t lednum = 0;
@@ -105,6 +107,8 @@ import_array();
             }
         }
 
+        channel->dirty = 1;
+
         if (render == 1)
         {
             ws2811_render(ledstrip);
@@ -113,7 +117,7 @@ import_array();
         return 0;
     }
 
-    int ws2811_led_set_multi_color(uint32_t* leds, int ledcount, uint32_t color, int render)
+    int ws2811_led_set_multi_color(uint32_t* leds, int ledcount, uint32_t color, int render, int ledchannel)
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
         uint32_t lednum = 0;
@@ -125,6 +129,8 @@ import_array();
             }
         }
 
+        channel->dirty = 1;
+
         if (render == 1)
         {
             ws2811_render(ledstrip);
@@ -133,8 +139,8 @@ import_array();
         return 0;
     }
 
-    ws2811_channel_t *ws2811_channel_get(ws2811_t *ws, int channelnum)
+    ws2811_channel_t *ws2811_channel_get(ws2811_t *ws, int ledchannel)
     {
-        return &ws->channel[channelnum];
+        return &ws->channel[ledchannel];
     }
 %}

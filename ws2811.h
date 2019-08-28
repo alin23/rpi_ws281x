@@ -79,6 +79,11 @@ typedef struct
     uint8_t gshift;                              //< Green shift value
     uint8_t bshift;                              //< Blue shift value
     uint8_t *gamma;                              //< Gamma correction table
+    uint8_t max_brightness;                      //< Max brightness based on available power
+    double available_watts;                      //< Max available watts
+    double max_brightness_usage;                 //< Maximum brightness across all pixels
+    double max_watts_usage;                      //< Maximum possible watt usage
+    uint8_t dirty;
 } ws2811_channel_t;
 
 typedef struct
