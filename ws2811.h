@@ -83,7 +83,7 @@ typedef struct
     double available_watts;                      //< Max available watts
     double max_brightness_usage;                 //< Maximum brightness across all pixels
     double max_watts_usage;                      //< Maximum possible watt usage
-    uint8_t dirty;
+    // uint8_t dirty;
 } ws2811_channel_t;
 
 typedef struct

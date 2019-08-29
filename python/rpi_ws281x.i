@@ -56,7 +56,7 @@ import_array();
         }
 
         channel->leds[lednum] = color;
-        channel->dirty = 1;
+        // channel->dirty = 1;
 
         if (render == 1)
         {
@@ -74,7 +74,7 @@ import_array();
             channel->leds[i] = color;
         }
 
-        channel->dirty = 1;
+        // channel->dirty = 1;
 
         if (render == 1)
         {
@@ -87,7 +87,7 @@ import_array();
     {
         ws2811_channel_t *channel = &ledstrip->channel[ledchannel];
         channel->brightness = brightness;
-        channel->dirty = 1;
+        // channel->dirty = 1;
         if (render == 1)
         {
             ws2811_render(ledstrip);
@@ -107,7 +107,7 @@ import_array();
             }
         }
 
-        channel->dirty = 1;
+        // channel->dirty = 1;
 
         if (render == 1)
         {
@@ -129,7 +129,7 @@ import_array();
             }
         }
 
-        channel->dirty = 1;
+        // channel->dirty = 1;
 
         if (render == 1)
         {

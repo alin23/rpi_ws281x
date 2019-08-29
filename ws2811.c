@@ -919,7 +919,7 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811) {
   device->dma_cb = NULL;
   for (chan = 0; chan < RPI_PWM_CHANNELS; chan++) {
     ws2811->channel[chan].leds = NULL;
-    ws2811->channel[chan].dirty = 1;
+    // ws2811->channel[chan].dirty = 1;
   }
 
   // Allocate the LED buffers
@@ -1074,9 +1074,10 @@ ws2811_return_t ws2811_wait(ws2811_t *ws2811) {
  * @returns  None
  */
 ws2811_return_t ws2811_render(ws2811_t *ws2811) {
-  if(!((&ws2811->channel[0])->dirty) && !((&ws2811->channel[0])->dirty)){
-      return WS2811_SUCCESS;
-  }
+  // if (((&ws2811->channel[0])->dirty == 0) && ((&ws2811->channel[0])->dirty == 0)) {
+      // return WS2811_SUCCESS;
+  // }
+
   volatile uint8_t *pxl_raw = ws2811->device->pxl_raw;
   int driver_mode = ws2811->device->driver_mode;
   int bitpos;
@@ -1091,9 +1092,9 @@ ws2811_return_t ws2811_render(ws2811_t *ws2811) {
   for (chan = 0; chan < RPI_PWM_CHANNELS; chan++) // Channel
   {
     ws2811_channel_t *channel = &ws2811->channel[chan];
-    if(!channel->dirty){
-        continue;
-    }
+    // if (channel->dirty == 0) {
+        // continue;
+    // }
 
     int wordpos = chan;     // PWM & PCM
     int bytepos = 0;        // SPI
@@ -1225,7 +1226,7 @@ ws2811_return_t ws2811_render(ws2811_t *ws2811) {
         }
       }
     }
-    channel->dirty = 0;
+    // channel->dirty = 0;
   }
 
   // Wait for any previous DMA operation to complete.
